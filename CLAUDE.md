@@ -41,6 +41,26 @@ The project is organized into several core components:
 - `/learn` - Extract patterns from sessions
 - `/skill-create` - Generate skills from git history
 
+## Plugin Update After Changes (IMPORTANT)
+
+The plugin system reads from a **cached copy** at `~/.claude/plugins/cache/everything-claude-code/everything-claude-code/1.8.0/`, NOT from the local repo working tree. After adding or modifying agents, skills, commands, hooks, or rules:
+
+1. **Update the cache** — copy changed files into the cache directory:
+   ```bash
+   # Example: copy a new or modified skill
+   cp -r skills/my-new-skill ~/.claude/plugins/cache/everything-claude-code/everything-claude-code/1.8.0/skills/
+
+   # Example: copy a new or modified agent
+   cp agents/my-agent.md ~/.claude/plugins/cache/everything-claude-code/everything-claude-code/1.8.0/agents/
+   ```
+2. **Update the commit SHA** in `~/.claude/plugins/installed_plugins.json` to match the new commit:
+   ```bash
+   git rev-parse HEAD  # get the SHA, then edit installed_plugins.json
+   ```
+3. **Reload** — run `/reload-plugins` in Claude Code
+
+Without steps 1-2, new or modified content will NOT appear even after `/reload-plugins`.
+
 ## Development Notes
 
 - Package manager detection: npm, pnpm, yarn, bun (configurable via `CLAUDE_PACKAGE_MANAGER` env var or project config)

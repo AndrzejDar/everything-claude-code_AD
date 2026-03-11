@@ -11,13 +11,25 @@ Sequential agent workflow for complex tasks.
 ### feature
 Full feature implementation workflow:
 ```
-planner -> tdd-guide -> code-reviewer -> security-reviewer
+planner -> tdd-guide -> frontend-test-writer -> code-reviewer -> security-reviewer
+```
+
+### feature-frontend
+Frontend feature workflow (skips TDD, focuses on component tests after implementation):
+```
+planner -> code-reviewer -> frontend-test-writer
 ```
 
 ### bugfix
 Bug investigation and fix workflow:
 ```
 planner -> tdd-guide -> code-reviewer
+```
+
+### bugfix-frontend
+Frontend bug fix workflow:
+```
+planner -> code-reviewer -> frontend-test-writer
 ```
 
 ### refactor
@@ -82,15 +94,22 @@ Executes:
    - Reads planner handoff
    - Writes tests first
    - Implements to pass tests
-   - Output: `HANDOFF: tdd-guide -> code-reviewer`
+   - Output: `HANDOFF: tdd-guide -> frontend-test-writer`
 
-3. **Code Reviewer Agent**
-   - Reviews implementation
+3. **Frontend Test Writer Agent**
+   - Discovers all created/modified frontend files
+   - Writes Jest + React Testing Library tests for every component, hook, and utility
+   - Ensures 80%+ coverage with proper mocking patterns
+   - Runs tests to verify they pass
+   - Output: `HANDOFF: frontend-test-writer -> code-reviewer`
+
+4. **Code Reviewer Agent**
+   - Reviews implementation AND test code
    - Checks for issues
    - Suggests improvements
    - Output: `HANDOFF: code-reviewer -> security-reviewer`
 
-4. **Security Reviewer Agent**
+5. **Security Reviewer Agent**
    - Security audit
    - Vulnerability check
    - Final approval
@@ -103,7 +122,7 @@ ORCHESTRATION REPORT
 ====================
 Workflow: feature
 Task: Add user authentication
-Agents: planner -> tdd-guide -> code-reviewer -> security-reviewer
+Agents: planner -> tdd-guide -> frontend-test-writer -> code-reviewer -> security-reviewer
 
 SUMMARY
 -------
@@ -113,6 +132,7 @@ AGENT OUTPUTS
 -------------
 Planner: [summary]
 TDD Guide: [summary]
+Frontend Test Writer: [summary]
 Code Reviewer: [summary]
 Security Reviewer: [summary]
 
@@ -168,5 +188,7 @@ $ARGUMENTS:
 1. **Start with planner** for complex features
 2. **Always include code-reviewer** before merge
 3. **Use security-reviewer** for auth/payment/PII
-4. **Keep handoffs concise** - focus on what next agent needs
-5. **Run verification** between agents if needed
+4. **Use frontend-test-writer** after any frontend feature implementation
+5. **Use `feature-frontend`** for frontend-only features (skips TDD, adds component tests after implementation)
+6. **Keep handoffs concise** - focus on what next agent needs
+7. **Run verification** between agents if needed

@@ -1,7 +1,6 @@
 ---
 name: react-orchestrator
-description: 'React frontend orchestration skill. Coordinates frontend-only development tasks through specialized sub-agents (coder-frontend, tester-frontend, reviewer-frontend, commiter). Handles FE: prefixed tasks exclusively. Use when: running frontend workflows, executing React/TypeScript task files, coordinating frontend pipelines.'
-autoload: false
+description: 'React frontend orchestration skill. Coordinates frontend-only development tasks through specialized sub-agents (coder-frontend, tester-frontend, reviewer-frontend, commiter). Handles FE tasks exclusively. Use when: running frontend workflows and plans, executing React/TypeScript task files, coordinating frontend pipelines.'
 ---
 
 # React Orchestrator Skill

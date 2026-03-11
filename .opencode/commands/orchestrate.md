@@ -25,6 +25,7 @@ Orchestrate multiple specialized agents for this complex task: $ARGUMENTS
 | code-reviewer | Code quality | Review changes |
 | security-reviewer | Security analysis | Vulnerability detection |
 | tdd-guide | Test-driven dev | Feature implementation |
+| frontend-test-writer | Frontend tests | Jest + RTL tests for every component |
 | build-error-resolver | Build fixes | TypeScript/build errors |
 | e2e-runner | E2E testing | User flow testing |
 | doc-updater | Documentation | Updating docs |

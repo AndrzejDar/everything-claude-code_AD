@@ -11,15 +11,29 @@ If you edit `.claude-plugin/plugin.json`, read this first.
 
 ## Summary (Read This First)
 
-The Claude plugin manifest validator is **strict and opinionated**.
-It enforces rules that are not fully documented in public schema references.
+Claude Code v2.1+ **auto-discovers plugin components by convention** from standard directory names. You do NOT need to declare `agents`, `commands`, `skills`, or `hooks` in `plugin.json`.
 
-The most common failure mode is:
+The `plugin.json` should contain **only metadata** (name, version, description, author, etc.). Component arrays are unnecessary and may interfere with auto-discovery or cause path resolution failures on Windows.
 
-> The manifest looks reasonable, but the validator rejects it with vague errors like
-> `agents: Invalid input`
+---
 
-This document explains why.
+## Convention-Based Auto-Discovery
+
+Claude Code automatically finds plugin components from these conventional paths relative to the plugin root:
+
+| Component | Convention | Format |
+|-----------|-----------|--------|
+| Agents | `agents/*.md` | Markdown with YAML frontmatter |
+| Commands | `commands/*.md` | Markdown with description frontmatter |
+| Skills | `skills/*/SKILL.md` | Markdown with sections |
+| Hooks | `hooks/hooks.json` | JSON with matcher and hooks array |
+| Rules | `rules/**/*.md` | Markdown guidelines |
+
+**No declaration in `plugin.json` is needed.** Place files in the correct directories and Claude Code will find them.
+
+### Proof: agent-coder Plugin
+
+The `agent-coder` plugin works perfectly with a minimal `plugin.json` containing only `name`, `version`, and `description` — zero component arrays. Claude Code auto-discovers all 7 agents, 5 commands, and 5+ skills from conventional directory names.
 
 ---
 
@@ -31,110 +45,24 @@ The `version` field is required by the validator even if omitted from some examp
 
 If missing, installation may fail during marketplace install or CLI validation.
 
-Example:
-
-```json
-{
-  "version": "1.1.0"
-}
-```
-
 ---
 
-## Field Shape Rules
+## DO NOT Declare Component Arrays
 
-The following fields **must always be arrays**:
-
-* `agents`
-* `commands`
-* `skills`
-* `hooks` (if present)
-
-Even if there is only one entry, **strings are not accepted**.
-
-### Invalid
-
-```json
-{
-  "agents": "./agents"
-}
-```
-
-### Valid
-
-```json
-{
-  "agents": ["./agents/planner.md"]
-}
-```
-
-This applies consistently across all component path fields.
-
----
-
-## Path Resolution Rules (Critical)
-
-### Agents MUST use explicit file paths
-
-The validator **does not accept directory paths for `agents`**.
-
-Even the following will fail:
-
-```json
-{
-  "agents": ["./agents/"]
-}
-```
-
-Instead, you must enumerate agent files explicitly:
-
-```json
-{
-  "agents": [
-    "./agents/planner.md",
-    "./agents/architect.md",
-    "./agents/code-reviewer.md"
-  ]
-}
-```
-
-This is the most common source of validation errors.
-
-### Commands and Skills
-
-* `commands` and `skills` accept directory paths **only when wrapped in arrays**
-* Explicit file paths are safest and most future-proof
-
----
-
-## Validator Behavior Notes
-
-* `claude plugin validate` is stricter than some marketplace previews
-* Validation may pass locally but fail during install if paths are ambiguous
-* Errors are often generic (`Invalid input`) and do not indicate root cause
-* Cross-platform installs (especially Windows) are less forgiving of path assumptions
-
-Assume the validator is hostile and literal.
-
----
-
-## The `hooks` Field: DO NOT ADD
-
-> ⚠️ **CRITICAL:** Do NOT add a `"hooks"` field to `plugin.json`. This is enforced by a regression test.
+> **CRITICAL:** Do NOT add `agents`, `commands`, `skills`, or `hooks` arrays to `plugin.json`.
 
 ### Why This Matters
 
-Claude Code v2.1+ **automatically loads** `hooks/hooks.json` from any installed plugin by convention. If you also declare it in `plugin.json`, you get:
+Claude Code v2.1+ automatically loads components from conventional directory paths. Declaring them explicitly in `plugin.json`:
 
-```
-Duplicate hooks file detected: ./hooks/hooks.json resolves to already-loaded file.
-The standard hooks/hooks.json is loaded automatically, so manifest.hooks should
-only reference additional hook files.
-```
+- Is unnecessary — auto-discovery handles everything
+- May interfere with the auto-discovery mechanism
+- Can cause path resolution failures, especially on Windows
+- For `hooks` specifically, causes a duplicate detection error
 
-### The Flip-Flop History
+### The `hooks` Flip-Flop History
 
-This has caused repeated fix/revert cycles in this repo:
+The hooks field has caused repeated fix/revert cycles in this repo:
 
 | Commit | Action | Trigger |
 |--------|--------|---------|
@@ -144,29 +72,14 @@ This has caused repeated fix/revert cycles in this repo:
 | `e3a1306` | REMOVE hooks | Users reported "duplicate hooks error" (#103) |
 
 **Root cause:** Claude Code CLI changed behavior between versions:
-- Pre-v2.1: Required explicit `hooks` declaration
+- Pre-v2.1: Required explicit declarations
 - v2.1+: Auto-loads by convention, errors on duplicate
+
+The same principle now applies to agents, commands, and skills — let auto-discovery handle them all.
 
 ### Current Rule (Enforced by Test)
 
-The test `plugin.json does NOT have explicit hooks declaration` in `tests/hooks/hooks.test.js` prevents this from being reintroduced.
-
-**If you're adding additional hook files** (not `hooks/hooks.json`), those CAN be declared. But the standard `hooks/hooks.json` must NOT be declared.
-
----
-
-## Known Anti-Patterns
-
-These look correct but are rejected:
-
-* String values instead of arrays
-* Arrays of directories for `agents`
-* Missing `version`
-* Relying on inferred paths
-* Assuming marketplace behavior matches local validation
-* **Adding `"hooks": "./hooks/hooks.json"`** - auto-loaded by convention, causes duplicate error
-
-Avoid cleverness. Be explicit.
+The test `plugin.json does NOT have explicit hooks declaration` in `tests/hooks/hooks.test.js` prevents hooks from being reintroduced.
 
 ---
 
@@ -174,19 +87,43 @@ Avoid cleverness. Be explicit.
 
 ```json
 {
-  "version": "1.1.0",
-  "agents": [
-    "./agents/planner.md",
-    "./agents/code-reviewer.md"
-  ],
-  "commands": ["./commands/"],
-  "skills": ["./skills/"]
+  "name": "my-plugin",
+  "version": "1.0.0",
+  "description": "My Claude Code plugin"
 }
 ```
 
-This structure has been validated against the Claude plugin validator.
+That's it. No `agents`, `commands`, `skills`, or `hooks` arrays. Claude Code discovers all components from conventional directory names.
 
-**Important:** Notice there is NO `"hooks"` field. The `hooks/hooks.json` file is loaded automatically by convention. Adding it explicitly causes a duplicate error.
+For a more complete metadata example:
+
+```json
+{
+  "name": "everything-claude-code",
+  "version": "1.8.0",
+  "description": "Complete collection of battle-tested Claude Code configs...",
+  "author": { "name": "...", "url": "..." },
+  "homepage": "https://github.com/...",
+  "repository": "https://github.com/...",
+  "license": "MIT",
+  "keywords": ["claude-code", "agents", "skills"]
+}
+```
+
+---
+
+## Known Anti-Patterns
+
+These look correct but cause problems:
+
+* Adding explicit `agents`, `commands`, or `skills` arrays (bypasses auto-discovery)
+* Adding `"hooks": ["./hooks/hooks.json"]` (causes duplicate error)
+* String values instead of arrays (if you do declare components)
+* Missing `version`
+* Relying on inferred paths
+* Assuming marketplace behavior matches local validation
+
+**Keep it simple: metadata only, let auto-discovery do the rest.**
 
 ---
 
@@ -194,16 +131,14 @@ This structure has been validated against the Claude plugin validator.
 
 Before submitting changes that touch `plugin.json`:
 
-1. Use explicit file paths for agents
-2. Ensure all component fields are arrays
-3. Include a `version`
+1. Keep only metadata fields (name, version, description, author, etc.)
+2. Do NOT add component arrays (agents, commands, skills, hooks)
+3. Ensure `version` is present
 4. Run:
 
 ```bash
 claude plugin validate .claude-plugin/plugin.json
 ```
-
-If in doubt, choose verbosity over convenience.
 
 ---
 

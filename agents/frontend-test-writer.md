@@ -277,7 +277,7 @@ describe('ComponentUnderTest', () => {
 
 Verify with:
 ```bash
-cd frontend/th && npx jest --coverage --collectCoverageFrom='src/pages/core/settlements/**/*.{ts,tsx}' --testPathPattern='settlements'
+cd frontend/th && npx jest --coverage --collectCoverageFrom='src/pages/core/settlements/**/*.{ts,tsx}' --testPathPatterns='settlements'
 ```
 
 ## Anti-Patterns to Avoid
@@ -289,17 +289,46 @@ cd frontend/th && npx jest --coverage --collectCoverageFrom='src/pages/core/sett
 5. **Shared mutable state between tests** — always `jest.clearAllMocks()` in `beforeEach`
 6. **Over-mocking** — if a utility is pure, import it directly instead of mocking
 
+## Verification (MANDATORY)
+
+After writing ALL test files, you MUST run these 3 checks in order. Fix any issues before reporting.
+
+### Step 1: TypeScript check
+```bash
+cd frontend/th && npx tsc --noEmit
+```
+Must exit with code 0. Fix all type errors (spread args, null assignments, generic inference).
+
+### Step 2: ESLint check
+```bash
+cd frontend/th && npx eslint "src/pages/core/settlements/**/*.test.{ts,tsx}"
+```
+Must exit with 0 errors and 0 warnings. Common fixes:
+- Add `/* eslint-disable @typescript-eslint/no-explicit-any */` at the top of test files (standard practice for mock-heavy test code)
+- Remove unused variables
+- Use `{ }` after `if` conditions (curly rule)
+- Use `{"string"}` instead of `"string"` in JSX (jsx-curly-brace-presence)
+- Sort JSX props alphabetically (jsx-sort-props)
+
+### Step 3: Run tests
+```bash
+cd frontend/th && npx jest --testPathPatternss='<feature-pattern>' --verbose
+```
+Must have 0 failures.
+
+If any step fails, fix the issues and re-run ALL 3 steps before reporting.
+
 ## Running Tests
 
 ```bash
 # All settlement tests
-cd frontend/th && npx jest --testPathPattern='settlements' --verbose
+cd frontend/th && npx jest --testPathPatternss='settlements' --verbose
 
 # Single file
 cd frontend/th && npx jest src/pages/core/settlements/components/shared/status-chip.test.tsx
 
 # With coverage
-cd frontend/th && npx jest --coverage --testPathPattern='settlements'
+cd frontend/th && npx jest --coverage --testPathPatternss='settlements'
 ```
 
 ## Output Format

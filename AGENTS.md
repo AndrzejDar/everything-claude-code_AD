@@ -27,6 +27,7 @@ This is a **production-ready AI coding plugin** providing 13 specialized agents,
 | go-build-resolver | Go build errors | Go build failures |
 | database-reviewer | PostgreSQL/Supabase specialist | Schema design, query optimization |
 | python-reviewer | Python code review | Python projects |
+| frontend-test-writer | Frontend component tests | After frontend feature implementation |
 
 ## Agent Orchestration
 
@@ -34,6 +35,7 @@ Use agents proactively without user prompt:
 - Complex feature requests → **planner**
 - Code just written/modified → **code-reviewer**
 - Bug fix or new feature → **tdd-guide**
+- Frontend feature implemented → **frontend-test-writer**
 - Architectural decision → **architect**
 - Security-sensitive code → **security-reviewer**
 
