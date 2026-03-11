@@ -73,6 +73,7 @@ Rules:
 - If `git commit` fails → report `STATUS: FAIL` with the full error message
 - Do NOT retry or attempt to fix — report and stop
 - Do NOT run any commands besides: `git status`, `git add`, `git diff`, `git reset HEAD`, `git commit`, `git log`
+- NEVER run `git push` — pushing is the user's responsibility
 
 ## Output
 

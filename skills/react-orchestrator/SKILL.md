@@ -411,6 +411,8 @@ STATUS: SUCCESS | FAIL | EMPTY
 
 **Gate:** Commit must succeed. If FAIL → report error and stop.
 
+**NEVER run `git push`.** Pushing to remote is always the user's responsibility.
+
 ---
 
 ## Pipeline Flow Diagram
